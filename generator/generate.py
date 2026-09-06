@@ -628,6 +628,16 @@ def dist(outdir, force=False, width=None, previews=False, level=None):
                    fg_contrast=themes.LEVEL_FG[level], level=level)
     open(os.path.join(outdir, "colors.toml"), "w").write(toml(cols, themes.INKS[press]))
     open(os.path.join(outdir, "shell.toml"), "w").write(shell_toml(cols))
+    # The screensaver reads this for the inks and the ground; colors.toml holds
+    # only what the press PRODUCED, not what it loaded. dist() never wrote it,
+    # so every published variant shipped without it and the renderer silently
+    # fell back to hardcoded harbour-night -- a dark screensaver under a paper
+    # theme. main() has always written it, which is why only the exports broke.
+    open(os.path.join(outdir, "overprint.toml"), "w").write(
+        f'press = "{press}"\nmode = "{level}"\n'
+        f'night = {str(night).lower()}\n'
+        f'ground = "{cols["background"]}"\n'
+        'inks = [' + ", ".join(f'"{i}"' for i in themes.INKS[press]) + ']\n')
 
     order = [v[0] for v in compose.VARIANTS]
 
